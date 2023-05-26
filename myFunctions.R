@@ -66,12 +66,18 @@ qcSample <- function(outputFolder, mySO, sample_name, mtPattern, riboPattern){
 	dev.off()
 
 	#QC sample based on selection
+	if(qc_filtering_method == "percentile"){
+		#calculate percentile
+		my.percentile <- quantile(mySO@meta.data$percent_mt, probs = 0.95)
+		mySO <- subset(x = mySO, subset = percent_mt < my.percentile[[1]])
+		print("Percentile threshold")
+		print(my.percentile)
+		print("Percentile Filtered Cell Numbers")
+		print(table(mySO@meta.data$orig.ident))
+	}
 	if(qc_filtering_method == "Seurat"){
 		mySO.filtered <- subset(x = mySO, subset = ((nFeature_RNA > min_features) & (nFeature_RNA < max_features) & (percent_mt <- (mt.threshold*100)) & (percent_ribo < ribo_fraction)))
-	}else if(qc_filtering_method == "percentile")
-	{
-
-	}else if(qc_filtering_method == "myQC")
+	}else
 	{
 		mySO.filtered <- myQC(mySO, mt.threshold)
 	}	
