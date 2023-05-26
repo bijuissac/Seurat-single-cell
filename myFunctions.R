@@ -40,4 +40,101 @@ readInData <- function(runSoupX,data_dir,sample_name,inputFormat){
 	return(mySO)
 }
 
+#function to QC sample
+qcSample <- function(outputFolder, mySO, sample_name, mtPattern, riboPattern){
+
+	#Raw cell numbers
+	print("Raw Cell Numbers")
+	print(table(mySO$orig.ident))
+
+	#calculate percentage mitochondria
+	mySO[["percent_mt"]] <- PercentageFeatureSet(object=mySO, pattern = mtPattern)
+
+	#calculate ribosomal protein proportions
+	mySO[["percent_ribo"]] <- colSums(mySO[grepl(riboPattern, rownames(mySO), ignore.case = TRUE),])/colSums(mySO)
+
+	#Identify doublets
+	whichDoublets <- idDoublets(mySO)
+
+	#generate before and after QC plots
+	plotFile <- paste0(outputFolder,"/plots/qcPlots/",sample_name,"_raw")
+	plotQC <- qcPlot(mySO@assays$RNA@counts)
+	plotQC <- plotQC + labs(caption = paste0('Doublets = ', sum(whichDoublets)))
+	
+	png(plotFile, width = 1500, height = 1000, res = 300)
+	print(plotQC)
+	dev.off()
+
+	#QC sample based on selection
+	if(qc_filtering_method == "Seurat"){
+		mySO.filtered <- subset(x = mySO, subset = ((nFeature_RNA > min_features) & (nFeature_RNA < max_features) & (percent_mt <- (mt.threshold*100)) & (percent_ribo < ribo_fraction)))
+	}else if(qc_filtering_method == "percentile")
+	{
+
+	}else if(qc_filtering_method == "myQC")
+	{
+		mySO.filtered <- myQC(mySO, mt.threshold)
+	}	
+
+	print("Filtered Cell Numbers")
+	print(table(mySO.filtered$orig.ident))
+
+        plotFile <- paste0(outputFolder,"/plots/qcPlots/",sample_name,"_filtered")
+        plotQC <- qcPlot(mySO@assays$RNA@counts)
+        plotQC <- plotQC
+
+        png(plotFile, width = 1500, height = 1000, res = 300)
+        print(plotQC) 
+        dev.off()
+
+	return(mySO.filtered)
+
+}
+
+#Identify Doublets
+idDoublets <- function(mySO){
+	num_cells <- ncol(mySO)
+	barCodes <- colnames(mySO)
+	mySO <- SingleCellExperiment::SingleCellExperiment(assays = list(counts = mySO@assays$RNA@counts))
+	mySO <- cxds(mySO)
+	mySO <- mySO$csds_score
+	idDoublets <- rep(FALSE, num_cells)
+	names(idDoublets) <- barCodes
+	idDoublets[names(boxplot.stats(mySO)$out)] <- TRUE
+	return(idDoublets)
+}
+
+#Generate Plots for QC
+qcPlot <- function(mySO, mtPattern){
+	librarySize <- colSums(mySO)
+	num_features <- colSums(mySO!=0)
+	mito_proportion <- colSums(mySO[grepl(mtPattern, rownames(mySO), ignore.case = TRUE),])/colSums(mySO)
+	qc.df <- data.frame(librarySize, num_features, mito_proportion)
+
+	QC1 <- ggplot(qc.df, aes('', librarySize)) +
+		geom_violin() + theme_light +
+		geom_jitter(width = 0.2, color = rgb(0,0,0,0.05)) +
+		xlab('') + ylab('Library Size') +
+		labs(subtitle = parse(text = paste0('italic(n) ==', ncol(mySO)))
+
+        QC2 <- ggplot(qc.df, aes('', num_features)) +
+                geom_violin() + theme_light +
+                geom_jitter(width = 0.2, color = rgb(0,0,0,0.05)) +
+                xlab('') + ylab('nFeatures') 
+
+        QC3 <- ggplot(qc.df, aes('', mito_proportion)) +
+                geom_violin() + theme_light +
+                geom_jitter(width = 0.2, color = rgb(0,0,0,0.05)) +
+                xlab('') + ylab('mtProportion')
+	
+	plot_obj <- QC1 + QC2 + QC3
+	return(plot_obj) 
+}
+
+
+
+
+
+
+
 

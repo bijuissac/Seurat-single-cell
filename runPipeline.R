@@ -19,8 +19,14 @@ for(myCondition in expCondTable$expConditions){
 	myReplicates <- expCondTable$expReplicates[[index]]
 	for(myReplicate in myReplicates){
 		mySO <- readInData(runSoupX,data_dir,myReplicate,inputFormat)
+
+		#QC sample
+		
+
 		rds_file <- paste0(outputFolder,"/rds/",myCondition,"_",myReplicate,".rds")
 		saveRDS(mySO,file = rds_file)
+
+		
 	}
 	index = index + 1
 }

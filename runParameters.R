@@ -65,11 +65,13 @@ expCondTable <- data.table(expConditions, expReplicates)
 
 #Organism specific database
 organisms <- list()
-organisms[["mouse"]] <- c("org.Mm.eg.db","mmu","^mt-",mt.threshold)
-organisms[["human"]] <- c("org.Hs.eg.db","hsa","^MT-",mt.threshold)
+organisms[["mouse"]] <- c("org.Mm.eg.db","mmu","^mt-","^Rpl|^Rps",mt.threshold)
+organisms[["human"]] <- c("org.Hs.eg.db","hsa","^MT-","^RPL|^RPL",mt.threshold)
 
 OrgDb <- toString(organisms[[myOrganism]][1])
 organism <- toString(organisms[[myOrganism]][2])
+mtPattern <- toString(organisms[[myOrganism]][3])
+riboPattern <- toString(organisms[[myOrganism]][4])
 
 #Integration method parameters
 integration_methods <- list()
