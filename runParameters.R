@@ -27,14 +27,29 @@ expReplicates <- list(c("C1","C2"),c("T1","T2"))
 #species
 myOrganism <- "mouse" #mouse/human
 
-#mitochondrial thresholds
+#mitochondrial and ribosomal fraction thresholds
 mt.threshold <- "0.05" #mouse = 0.05/human = 0.10
+ribo_fraction = 1
 
 #filtering method
-#
-qc_filtering_method = "Seurat" #Seurat/myQC
+#myQC will dynamically calculate feature thresholds while Seurat is a hard threshold
+qc_filtering_method = "Seurat" #Seurat/myQC/percentile
+min_features = 200
+max_features = 2500
+if(qc_filtering_method=="percentile"){
+	mt.threshold = 1
+}
 
+#Integration method
+integration_method <- "harmony" #seurat/harmony
 
+#Default dimensions and resolutions and number of principal components
+dimensions <- c(seq(10,100,10))
+resolutions <- c(0.8) 
+npcs <- 100
+
+#Default Pathway parameters
+show_top_pathways <- 10
 
 #++++++++++++++++++++++++++++++++++++
 #Do not edit beyond this line
@@ -53,10 +68,18 @@ organisms[["human"]] <- c("org.Hs.eg.db","hsa","^MT-",mt.threshold)
 OrgDb <- toString(organisms[[myOrganism]][1])
 organism <- toString(organisms[[myOrganism]][2])
 
+#Integration method parameters
+integration_methods <- list()
+integration_methods[["seurat"]] <- c("integrated","pca")
+integration_methods[["harmony"]] <- c("harmony","harmony")
+reduction_method <- toString(integration_methods[[integration_method]][2])
 
-
-
-
+#SingleR annotation datasets
+singleRDatasets <- list()
+singleRDatasets[["human"]] <- ImmGenData() #human immune dataset
+singleRDatasets[["mouse"]] <- MouseRNAseqData()
+reference_dataset <- singleRDatasets[[myOrganism]]
+reference_cell_types <- reference_dataset$label.main
 
 
 
