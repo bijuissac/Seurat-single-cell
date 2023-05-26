@@ -1,12 +1,14 @@
 #This file defines the running parameters for single cell RNAseq pipeline
 #Input Directories
-base_dir <- "/home/user/scrnaseq/"
+base_dir <- "/project/RC-Data-Science/Biju/Test/"
 data_dir <- paste0(base_dir,"data/")
 code_dir <- paste0(base_dir,"code/")
 
 #R library locations and functions
 r_library <- paste0(base_dir,"r4.2.3/library/")
-source(paste0(base_dir,"code/myFunctions.R")
+.libPaths(r_library)
+#library(data.table)
+source(paste0(code_dir,"/myFunctions.R"))
 
 #Estimate and remove cell-free mRNA contamination
 runSoupX = FALSE #TRUE/FALSE
@@ -20,6 +22,9 @@ projectName = "myProject"
 #Output Folder
 outputFolder = paste0(base_dir,projectName)
 
+#Run code in full or partial steps
+run_conditions <- "all" # all, merge, integrate, permutations, deg
+
 #Conditions and Replicates
 expConditions <- list("OVA","SAL")
 expReplicates <- list(c("EC-OVA-1","EC-OVA-2","EC-OVA-3"),c("EC-SAL-1","EC-SAL-2","EC-SAL-3"))
@@ -27,21 +32,19 @@ expReplicates <- list(c("EC-OVA-1","EC-OVA-2","EC-OVA-3"),c("EC-SAL-1","EC-SAL-2
 #species
 myOrganism <- "mouse" #mouse/human
 
-#mitochondrial and ribosomal fraction thresholds
-mt.threshold <- "0.05" #mouse = 0.05/human = 0.10
+#ribosomal fraction thresholds
 ribo_fraction = 1
 
 #filtering method
 #myQC will dynamically calculate feature thresholds while Seurat is a hard threshold
-qc_filtering_method = "Seurat" #Seurat/myQC/percentile
+qc_filtering_method = "myQC" #Seurat/myQC/percentile
+
+#feature thresholds for CreateSeurat Object
 min_features = 200
 max_features = 2500
-if(qc_filtering_method=="percentile"){
-	mt.threshold = 1
-}
 
 #Integration method
-integration_method <- "harmony" #seurat/harmony
+integration_method <- "seurat" #seurat/harmony
 
 #Default dimensions and resolutions and number of principal components
 dimensions <- c(seq(10,100,10))
@@ -58,20 +61,29 @@ show_top_pathways <- 10
 outputSubFolder <- c("savedData", "differentialExpression", "pathwayEnrichment", "plots", "logFiles", "topMarkers",
 			"pathwayEnrichment/KEGG", "pathwayEnrichment/GO_BP", "pathwayEnrichment/GO_CC", "pathwayEnrichment/GO_MF",
 			"plots/featurePlots", "plots/clustering", "plots/pathways", "plots/pathways/KEGG", "plots/pathways/GO_BP",
-			"plots/pathways/GO_CC", "plots/pathways/GO_MF")
+			"plots/pathways/GO_CC", "plots/pathways/GO_MF", "plots/qcPlots")
 
 #Conditions and replicates table
 expCondTable <- data.table(expConditions, expReplicates)
 
 #Organism specific database
 organisms <- list()
-organisms[["mouse"]] <- c("org.Mm.eg.db","mmu","^mt-","^Rpl|^Rps",mt.threshold)
-organisms[["human"]] <- c("org.Hs.eg.db","hsa","^MT-","^RPL|^RPL",mt.threshold)
+organisms[["mouse"]] <- c("org.Mm.eg.db","mmu","^mt-","^Rpl|^Rps",0.05)
+organisms[["human"]] <- c("org.Hs.eg.db","hsa","^MT-","^RPL|^RPL",0.10)
 
 OrgDb <- toString(organisms[[myOrganism]][1])
 organism <- toString(organisms[[myOrganism]][2])
 mtPattern <- toString(organisms[[myOrganism]][3])
 riboPattern <- toString(organisms[[myOrganism]][4])
+
+#mt filtering thresholds
+if(qc_filtering_method=="percentile"){
+        mt.threshold = 1
+}else
+{
+	mt.threshold <- as.numeric(organisms[[myOrganism]][5])
+}
+print(paste0("OrgDb : ",OrgDb))
 
 #Integration method parameters
 integration_methods <- list()
