@@ -21,8 +21,8 @@ projectName = "myProject"
 outputFolder = paste0(base_dir,projectName)
 
 #Conditions and Replicates
-expConditions <- list("Control","Treatment")
-expReplicates <- list(c("C1","C2"),c("T1","T2"))
+expConditions <- list("OVA","SAL")
+expReplicates <- list(c("EC-OVA-1","EC-OVA-2","EC-OVA-3"),c("EC-SAL-1","EC-SAL-2","EC-SAL-3"))
 
 #species
 myOrganism <- "mouse" #mouse/human
@@ -59,6 +59,9 @@ outputSubFolder <- c("savedData", "differentialExpression", "pathwayEnrichment",
 			"pathwayEnrichment/KEGG", "pathwayEnrichment/GO_BP", "pathwayEnrichment/GO_CC", "pathwayEnrichment/GO_MF",
 			"plots/featurePlots", "plots/clustering", "plots/pathways", "plots/pathways/KEGG", "plots/pathways/GO_BP",
 			"plots/pathways/GO_CC", "plots/pathways/GO_MF")
+
+#Conditions and replicates table
+expCondTable <- data.table(expConditions, expReplicates)
 
 #Organism specific database
 organisms <- list()

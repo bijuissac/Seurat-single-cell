@@ -37,7 +37,7 @@ readInData <- function(runSoupX,data_dir,sample_name,inputFormat){
 	print(paste0(sample_name," data loaded successfully"))
 	print("Creating Seurat Object if atleast 3 cells and 200 features")
 	mySO <- CreateSeuratObject(counts = sample.obj, project = sample_name, min.cells = 3, min.features = 200)
-	return mySO
+	return(mySO)
 }
 
 
