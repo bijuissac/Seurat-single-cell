@@ -1,6 +1,6 @@
 #This file defines the running parameters for single cell RNAseq pipeline
 #Input Directories
-base_dir <- "/project/RC-Data-Science/Biju/Test/"
+base_dir <- "/home/User/Test/"
 data_dir <- paste0(base_dir,"data/")
 code_dir <- paste0(base_dir,"code/")
 
