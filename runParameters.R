@@ -26,8 +26,8 @@ outputFolder = paste0(base_dir,projectName)
 run_conditions <- "all" # all, merge, integrate, permutations, deg
 
 #Conditions and Replicates
-expConditions <- list("OVA","SAL")
-expReplicates <- list(c("EC-OVA-1","EC-OVA-2","EC-OVA-3"),c("EC-SAL-1","EC-SAL-2","EC-SAL-3"))
+expConditions <- list("S1","S2")
+expReplicates <- list(c("S1-1","S1-2","S1-3"),c("S2-1","S2-2","S2-3"))
 
 #species
 myOrganism <- "mouse" #mouse/human
